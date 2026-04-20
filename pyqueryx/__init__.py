@@ -10,7 +10,7 @@ from .config import DatabaseConfig, config_from_env
 from .connection import EZConnection, PyQueryXConnection
 from .exceptions import EZSQLError, PyQueryXError
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 __all__ = [
     "connect",
@@ -311,7 +311,7 @@ def _parse_url(url: str) -> Dict[str, Any]:
         if parsed.netloc and parsed.path:
             database = f"{parsed.netloc}{parsed.path}"
         else:
-            database = unquote(parsed.path.lstrip("/")) or ":memory:"
+            database = _sqlite_database_from_url_path(parsed.path)
         return {"db_type": db_type, "database": database, "options": query_options}
 
     return {
@@ -334,6 +334,26 @@ def _normalize_url_scheme(scheme: str) -> str:
         "sqlite": "sqlite",
     }
     return aliases.get(scheme.lower(), scheme.lower())
+
+
+def _sqlite_database_from_url_path(path: str) -> str:
+    """Return a SQLite database path from a parsed URL path."""
+    database = unquote(path)
+
+    if database in {"", "/"}:
+        return ":memory:"
+
+    if database == "/:memory:":
+        return ":memory:"
+
+    if database.startswith("//"):
+        return "/" + database.lstrip("/")
+
+    # Windows absolute paths parse as /C:/path.db.
+    if len(database) >= 3 and database[0] == "/" and database[2] == ":":
+        return database[1:]
+
+    return database
 
 
 def _clean_connection_args(args: Dict[str, Any]) -> Dict[str, Any]:

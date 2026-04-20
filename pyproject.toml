@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyQueryX"
-version = "0.4.1"
+version = "0.4.2"
 description = "A friendly Python SQL toolkit with simple querying, config helpers, and DB-API connectivity."
 readme = "README.md"
 requires-python = ">=3.8"

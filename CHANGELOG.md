@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.2 - 2026-04-20
+
+- Fixed SQLite URL parsing for absolute POSIX paths used by Linux CI runners.
+
 ## 0.4.1 - 2026-04-20
 
 - Fixed GitHub Actions package install failures by upgrading packaging tools

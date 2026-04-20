@@ -17,6 +17,7 @@ from pyqueryx import (
     connect_from_config,
     connect_from_env,
 )
+from pyqueryx import _parse_url
 from pyqueryx.helpers import is_select_query
 
 
@@ -310,7 +311,12 @@ class PyQueryXTests(unittest.TestCase):
         self.assertIs(pyqueryx_module.connect, connect)
         self.assertIs(ezsql_module.connect, connect)
         self.assertIs(ezsql_legacy_module.connect, connect)
-        self.assertEqual(pyqueryx_module.__version__, "0.4.1")
+        self.assertEqual(pyqueryx_module.__version__, "0.4.2")
+
+    def test_sqlite_url_preserves_posix_absolute_path(self) -> None:
+        parsed = _parse_url("sqlite:////tmp/pyqueryx-test.db")
+
+        self.assertEqual(parsed["database"], "/tmp/pyqueryx-test.db")
 
     def fail_import(self, blocked_name: str):
         return self.fail_imports({blocked_name})
