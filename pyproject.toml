@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "EzSQL.py"
-version = "0.3.1"
+version = "0.3.2"
 description = "A small, beginner-friendly SQL wrapper for Python DB-API drivers."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -30,11 +30,11 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-postgres = ["psycopg2>=2.9"]
+postgres = ["pg8000>=1.30"]
 mysql = ["mysql-connector-python>=8.0"]
 oracle = ["oracledb>=2.0"]
 all = [
-    "psycopg2>=2.9",
+    "pg8000>=1.30",
     "mysql-connector-python>=8.0",
     "oracledb>=2.0",
 ]

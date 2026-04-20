@@ -2,10 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.2 - 2026-04-20
+
+- Added repository artwork for README and GitHub social preview.
+- Added PostgreSQL and MySQL connection argument tests.
+- Added pure-Python PostgreSQL fallback support through `pg8000`.
+- Verified PostgreSQL and MySQL driver installation in the local environment.
+
 ## 0.3.1 - 2026-04-20
 
 - Updated package metadata and README links for the renamed GitHub repository.
 - Added direct GitHub installation instructions for other users.
+- Switched the PostgreSQL optional dependency to pure-Python `pg8000` while
+  keeping compatibility with existing `psycopg2` and `psycopg` installs.
 
 ## 0.3.0 - 2026-04-20
 

@@ -1,5 +1,9 @@
 # EzSQL.py
 
+<p>
+  <img src="assets/ezsql-icon.svg" width="96" alt="EzSQL.py icon">
+</p>
+
 `EzSQL.py` is a small Python library that wraps Python DB-API connections with a
 simple interface. It hides cursors and routine transaction handling so beginners
 can run SQL with two methods: `query()` and `execute()`.
@@ -36,6 +40,10 @@ pip install "EzSQL.py[mysql]"
 pip install "EzSQL.py[oracle]"
 pip install "EzSQL.py[all]"
 ```
+
+The PostgreSQL extra installs pure-Python `pg8000` so it works in more Python
+environments. EzSQL.py still prefers `psycopg2` or `psycopg` when either is
+already installed.
 
 ## Quick Start
 
@@ -169,3 +177,7 @@ Run a syntax check:
 ```bash
 python -m compileall EzSQL.py ezsql tests examples
 ```
+
+## Repository Artwork
+
+Use `assets/ezsql-social-preview.svg` as the GitHub social preview image.

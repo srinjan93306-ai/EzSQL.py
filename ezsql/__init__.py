@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional
 from .connection import EZConnection
 from .exceptions import EZSQLError
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 __all__ = ["connect", "EZConnection", "EZSQLError", "__version__"]
 
@@ -49,27 +49,56 @@ def connect(
         return EZConnection(connection, normalized_db_type)
 
     if normalized_db_type in {"postgres", "postgresql"}:
+        postgres_driver = None
+        postgres_driver_name = None
+        postgres_import_error = None
+
         try:
             import psycopg2
-        except ImportError as exc:
-            raise EZSQLError(
-                "EZSQL Error: PostgreSQL support requires psycopg2 to be installed."
-            ) from exc
 
-        connection_args = {
-            "dbname": database,
-            "host": host,
-            "user": user,
-            "password": password,
-            "port": port,
-        }
-        connection_args = {
-            key: value for key, value in connection_args.items() if value is not None
-        }
+            postgres_driver = psycopg2
+            postgres_driver_name = "psycopg"
+        except ImportError as exc:
+            postgres_import_error = exc
+
+        if postgres_driver is None:
+            try:
+                import psycopg
+
+                postgres_driver = psycopg
+                postgres_driver_name = "psycopg"
+            except ImportError as exc:
+                postgres_import_error = exc
+
+        if postgres_driver is None:
+            try:
+                from pg8000 import dbapi as pg8000
+
+                postgres_driver = pg8000
+                postgres_driver_name = "pg8000"
+            except ImportError as exc:
+                postgres_import_error = exc
+
+        if postgres_driver is None:
+            raise EZSQLError(
+                "EZSQL Error: PostgreSQL support requires psycopg2, psycopg, "
+                "or pg8000 to be installed."
+            ) from postgres_import_error
+
+        database_key = "database" if postgres_driver_name == "pg8000" else "dbname"
+        connection_args = _clean_connection_args(
+            {
+                database_key: database,
+                "host": host,
+                "user": user,
+                "password": password,
+                "port": port,
+            }
+        )
 
         try:
-            connection = psycopg2.connect(**connection_args)
-        except psycopg2.Error as exc:
+            connection = postgres_driver.connect(**connection_args)
+        except postgres_driver.Error as exc:
             raise EZSQLError(f"EZSQL Error: {exc}") from exc
 
         return EZConnection(connection, "postgres")
