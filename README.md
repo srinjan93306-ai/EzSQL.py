@@ -180,4 +180,10 @@ python -m compileall EzSQL.py ezsql tests examples
 
 ## Repository Artwork
 
-Use `assets/ezsql-social-preview.svg` as the GitHub social preview image.
+Use `assets/ezsql-social-preview.png` as the GitHub social preview image.
+
+## PyPI Publishing
+
+This project includes a GitHub Actions workflow for PyPI Trusted Publishing.
+After configuring the trusted publisher on PyPI, publish a GitHub release to
+upload the package automatically.
