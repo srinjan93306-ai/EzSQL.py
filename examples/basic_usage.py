@@ -1,11 +1,11 @@
-"""Basic ezsql usage example."""
+"""Basic PyQueryX usage example."""
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ezsql import connect
+from pyqueryx import connect
 
 
 def main() -> None:
@@ -14,9 +14,9 @@ def main() -> None:
 
     conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT)")
     conn.execute("DELETE FROM users")
-    conn.execute("INSERT INTO users VALUES (1, 'Srinjan')")
+    conn.execute("INSERT INTO users VALUES (?, ?)", (1, "Srinjan"))
 
-    result = conn.query("SELECT * FROM users")
+    result = conn.query("SELECT * FROM users WHERE id = ?", (1,))
     print(result)
 
     conn.close()

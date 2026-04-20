@@ -1,186 +1,186 @@
-# EzSQL.py
+# PyQueryX
 
 <p>
-  <img src="assets/ezsql-icon.svg" width="96" alt="EzSQL.py icon">
+  <img src="assets/pyqueryx-icon.svg" width="96" alt="PyQueryX icon">
 </p>
 
-`EzSQL.py` is a small Python library that wraps Python DB-API connections with a
-simple interface. It hides cursors and routine transaction handling so beginners
-can run SQL with two methods: `query()` and `execute()`.
+PyQueryX is a friendly Python SQL toolkit that wraps DB-API drivers and keeps
+common database work simple. It hides cursors, manages commits, supports
+parameterized queries, and gives you config helpers for real applications.
 
-## Installation
+## Install
 
-Install directly from GitHub:
-
-```bash
-pip install "git+https://github.com/srinjan93306-ai/EzSQL.py.git"
-```
-
-For optional database drivers from GitHub:
+From GitHub:
 
 ```bash
-pip install "EzSQL.py[postgres] @ git+https://github.com/srinjan93306-ai/EzSQL.py.git"
-pip install "EzSQL.py[mysql] @ git+https://github.com/srinjan93306-ai/EzSQL.py.git"
-pip install "EzSQL.py[oracle] @ git+https://github.com/srinjan93306-ai/EzSQL.py.git"
-pip install "EzSQL.py[all] @ git+https://github.com/srinjan93306-ai/EzSQL.py.git"
+pip install "git+https://github.com/srinjan93306-ai/PyQueryX.git"
 ```
 
-For local development:
+With optional database drivers:
 
 ```bash
-pip install -e .
+pip install "PyQueryX[postgres] @ git+https://github.com/srinjan93306-ai/PyQueryX.git"
+pip install "PyQueryX[mysql] @ git+https://github.com/srinjan93306-ai/PyQueryX.git"
+pip install "PyQueryX[oracle] @ git+https://github.com/srinjan93306-ai/PyQueryX.git"
+pip install "PyQueryX[all] @ git+https://github.com/srinjan93306-ai/PyQueryX.git"
 ```
 
-SQLite works with Python's standard library. After publishing to PyPI, these
-optional extras can be installed with:
+After PyPI publishing:
 
 ```bash
-pip install "EzSQL.py[postgres]"
-pip install "EzSQL.py[mysql]"
-pip install "EzSQL.py[oracle]"
-pip install "EzSQL.py[all]"
+pip install PyQueryX
+pip install "PyQueryX[all]"
 ```
 
-The PostgreSQL extra installs pure-Python `pg8000` so it works in more Python
-environments. EzSQL.py still prefers `psycopg2` or `psycopg` when either is
-already installed.
+SQLite works with Python's standard library. PostgreSQL uses pure-Python
+`pg8000` by default, while still supporting existing `psycopg2` or `psycopg`
+installs.
 
 ## Quick Start
 
 ```python
-from ezsql import connect
+from pyqueryx import connect
 
-conn = connect("sqlite", database="test.db")
+with connect("sqlite", database="test.db") as db:
+    db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT)")
+    db.execute("INSERT INTO users VALUES (?, ?)", (1, "Srinjan"))
 
-conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT)")
-conn.execute("INSERT INTO users VALUES (1, 'Srinjan')")
-
-result = conn.query("SELECT * FROM users")
-
-print(result)
-
-conn.close()
+    rows = db.query("SELECT * FROM users WHERE id = ?", (1,))
+    print(rows)
 ```
 
 Output:
 
 ```python
-[(1, 'Srinjan')]
+[(1, "Srinjan")]
 ```
 
-## API
-
-### `connect(db_type="sqlite", database=None, host=None, user=None, password=None, port=None)`
-
-Creates an `EZConnection`.
-
-Supported database types:
-
-- `"sqlite"`
-- `"postgres"` or `"postgresql"`
-- `"mysql"` or `"myssql"`
-- `"oracle"`
-
-SQLite creates the database file automatically when it does not already exist.
-If `database` is omitted for SQLite, EzSQL.py uses an in-memory database.
-
-For PostgreSQL and MySQL, `database` is the database name.
-
-For Oracle, `database` can be either the service name used with `host` and
-`port`, or a full DSN/Easy Connect string when `host` is omitted.
-
-## More Connection Examples
+## Better Query Helpers
 
 ```python
-postgres = connect(
-    "postgres",
+db = connect("sqlite", database="app.db")
+
+db.execute("CREATE TABLE users (id INTEGER, name TEXT)")
+db.executemany(
+    "INSERT INTO users VALUES (?, ?)",
+    [(1, "Srinjan"), (2, "Alex")],
+)
+
+print(db.one("SELECT name FROM users WHERE id = ?", (1,)))
+print(db.scalar("SELECT COUNT(*) FROM users"))
+
+db.close()
+```
+
+## Config Options
+
+Use a config object:
+
+```python
+from pyqueryx import DatabaseConfig, connect_from_config
+
+config = DatabaseConfig(
+    db_type="postgres",
     database="app",
     host="localhost",
     user="postgres",
     password="secret",
     port=5432,
+    timeout=10,
 )
 
-mysql = connect(
+db = connect_from_config(config)
+```
+
+Use environment variables:
+
+```bash
+set PYQUERYX_DB_TYPE=sqlite
+set PYQUERYX_DATABASE=app.db
+```
+
+```python
+from pyqueryx import connect_from_env
+
+db = connect_from_env()
+```
+
+Use a URL:
+
+```python
+db = connect(url="sqlite:///app.db")
+db = connect(url="postgres://postgres:secret@localhost:5432/app")
+db = connect(url="mysql://root:secret@localhost:3306/app")
+```
+
+## Connectivity
+
+Supported database types:
+
+- `sqlite`
+- `postgres` or `postgresql`
+- `mysql` or `myssql`
+- `oracle`
+
+Extra connection options can be passed directly:
+
+```python
+db = connect(
     "mysql",
     database="app",
     host="localhost",
     user="root",
     password="secret",
     port=3306,
-)
-
-oracle = connect(
-    "oracle",
-    database="ORCLPDB1",
-    host="localhost",
-    user="hr",
-    password="secret",
-    port=1521,
+    timeout=10,
+    echo=True,
 )
 ```
 
-### `EZConnection.query(sql)`
-
-Executes SQL and returns all rows as a list of tuples. Statements with no result
-return an empty list. Write statements are committed automatically.
-
-### `EZConnection.execute(sql)`
-
-Executes SQL and returns `None`. Use it for `CREATE TABLE`, `INSERT`, `UPDATE`,
-and `DELETE`.
-
-### `EZConnection.close()`
-
-Closes the database connection.
-
-## Errors
-
-Database errors are wrapped in `EZSQLError`:
+## Transactions
 
 ```python
-from ezsql import EZSQLError
-
-try:
-    conn.query("SELECT * FROM missing_table")
-except EZSQLError as error:
-    print(error)
+with connect("sqlite", database="app.db") as db:
+    with db.transaction():
+        db.execute("INSERT INTO users VALUES (?, ?)", (1, "Srinjan"))
+        db.execute("INSERT INTO users VALUES (?, ?)", (2, "Alex"))
 ```
 
-## Import Name
+If anything fails inside the transaction block, PyQueryX rolls back.
 
-After installation, users can import the library with the stable lowercase
-package name:
+## Compatibility
+
+New code should use:
+
+```python
+from pyqueryx import connect
+```
+
+These compatibility imports still work for older code:
 
 ```python
 from ezsql import connect
-```
-
-For users who prefer the branded name, this also works:
-
-```python
 import EzSQL
-
-conn = EzSQL.connect("sqlite")
+import PyQueryX
 ```
 
 ## Development
 
-Run the test suite:
+Run tests:
 
 ```bash
 python -m unittest discover
 ```
 
-Run a syntax check:
+Run syntax checks:
 
 ```bash
-python -m compileall EzSQL.py ezsql tests examples
+python -m compileall PyQueryX.py EzSQL.py pyqueryx ezsql tests examples
 ```
 
 ## Repository Artwork
 
-Use `assets/ezsql-social-preview.png` as the GitHub social preview image.
+Use `assets/pyqueryx-social-preview.png` as the GitHub social preview image.
 
 ## PyPI Publishing
 

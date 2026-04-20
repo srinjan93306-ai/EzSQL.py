@@ -8,4 +8,7 @@
   <path d="M184 268L146 306L184 344" stroke="#F8FAFC" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M328 268L366 306L328 344" stroke="#F8FAFC" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M284 260L230 352" stroke="#FDE047" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="378" cy="126" r="34" fill="#FDE047"/>
+  <path d="M365 126H391" stroke="#111827" stroke-width="10" stroke-linecap="round"/>
+  <path d="M378 113V139" stroke="#111827" stroke-width="10" stroke-linecap="round"/>
 </svg>

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for improving `EzSQL.py`.
+Thanks for improving `PyQueryX`.
 
 ## Development Setup
 
@@ -30,7 +30,7 @@ python -m unittest discover
 ## Run Syntax Checks
 
 ```bash
-python -m compileall EzSQL.py ezsql tests examples
+python -m compileall PyQueryX.py EzSQL.py pyqueryx ezsql tests examples
 ```
 
 ## Project Principles
@@ -38,5 +38,5 @@ python -m compileall EzSQL.py ezsql tests examples
 - Keep the public API small.
 - Do not expose cursors to users.
 - Prefer beginner-friendly names and behavior.
-- Wrap database driver errors in `EZSQLError`.
+- Wrap database driver errors in `PyQueryXError`.
 - Avoid adding dependencies unless they clearly improve the library.

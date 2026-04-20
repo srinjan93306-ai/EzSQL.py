@@ -1,6 +1,9 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="1280" height="640" fill="#0F172A"/>
   <rect x="82" y="86" width="1116" height="468" rx="44" fill="#111827" stroke="#22D3EE" stroke-width="4"/>
+  <text x="520" y="265" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="800">PyQueryX</text>
+  <text x="524" y="345" fill="#BAE6FD" font-family="Arial, Helvetica, sans-serif" font-size="38">SQLite | PostgreSQL | MySQL | Oracle</text>
+  <text x="524" y="424" fill="#FDE047" font-family="Consolas, Monaco, monospace" font-size="32">from pyqueryx import connect</text>
   <g transform="translate(142 154) scale(0.62)">
     <rect width="512" height="512" rx="96" fill="#111827"/>
     <path d="M112 164C112 127.5 176.5 98 256 98C335.5 98 400 127.5 400 164V348C400 384.5 335.5 414 256 414C176.5 414 112 384.5 112 348V164Z" fill="#0EA5E9"/>
@@ -11,8 +14,8 @@
     <path d="M184 268L146 306L184 344" stroke="#F8FAFC" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M328 268L366 306L328 344" stroke="#F8FAFC" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M284 260L230 352" stroke="#FDE047" stroke-width="24" stroke-linecap="round"/>
+    <circle cx="378" cy="126" r="34" fill="#FDE047"/>
+    <path d="M365 126H391" stroke="#111827" stroke-width="10" stroke-linecap="round"/>
+    <path d="M378 113V139" stroke="#111827" stroke-width="10" stroke-linecap="round"/>
   </g>
-  <text x="520" y="270" fill="#F8FAFC" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="800">EzSQL.py</text>
-  <text x="524" y="346" fill="#BAE6FD" font-family="Arial, Helvetica, sans-serif" font-size="36">Simple Python SQL for SQLite, PostgreSQL, MySQL, and Oracle</text>
-  <text x="524" y="418" fill="#FDE047" font-family="Consolas, Monaco, monospace" font-size="34">from ezsql import connect</text>
 </svg>

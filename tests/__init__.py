@@ -1,1 +1,1 @@
-"""Test package for ezsql."""
+"""Test package for PyQueryX."""

@@ -1,22 +1,27 @@
-"""Tests for the ezsql public API."""
+"""Tests for the PyQueryX public API and compatibility shims."""
 
-import os
 import importlib
+import os
 import sqlite3
 import sys
 import tempfile
 import types
 import unittest
-from contextlib import redirect_stdout
-from io import StringIO
 from unittest.mock import patch
 
-from ezsql import EZConnection, EZSQLError, connect
-from ezsql.helpers import is_select_query
+from pyqueryx import (
+    DatabaseConfig,
+    PyQueryXConnection,
+    PyQueryXError,
+    connect,
+    connect_from_config,
+    connect_from_env,
+)
+from pyqueryx.helpers import is_select_query
 
 
-class EZSQLTests(unittest.TestCase):
-    """SQLite-backed tests for ezsql behavior."""
+class PyQueryXTests(unittest.TestCase):
+    """SQLite-backed tests for PyQueryX behavior."""
 
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -25,24 +30,16 @@ class EZSQLTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
 
-    def connect_sqlite(self) -> EZConnection:
-        output = StringIO()
+    def connect_sqlite(self) -> PyQueryXConnection:
+        return connect("sqlite", database=self.database_path)
 
-        with redirect_stdout(output):
-            return connect("sqlite", database=self.database_path)
-
-    def test_sqlite_usage_example(self) -> None:
-        output = StringIO()
-
-        with redirect_stdout(output):
-            conn = connect("sqlite", database=self.database_path)
-
-        self.assertIn("Connected to SQLite", output.getvalue())
+    def test_sqlite_usage_example_with_parameters(self) -> None:
+        conn = self.connect_sqlite()
 
         conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT)")
-        conn.execute("INSERT INTO users VALUES (1, 'Srinjan')")
+        conn.execute("INSERT INTO users VALUES (?, ?)", (1, "Srinjan"))
 
-        result = conn.query("SELECT * FROM users")
+        result = conn.query("SELECT * FROM users WHERE id = ?", (1,))
 
         self.assertEqual(result, [(1, "Srinjan")])
         conn.close()
@@ -63,19 +60,82 @@ class EZSQLTests(unittest.TestCase):
         self.assertEqual(result, [])
         conn.close()
 
+    def test_one_scalar_and_executemany(self) -> None:
+        conn = self.connect_sqlite()
+
+        conn.execute("CREATE TABLE users (id INTEGER, name TEXT)")
+        conn.executemany(
+            "INSERT INTO users VALUES (?, ?)",
+            [(1, "Srinjan"), (2, "Alex")],
+        )
+
+        self.assertEqual(conn.one("SELECT name FROM users WHERE id = ?", (2,)), ("Alex",))
+        self.assertEqual(conn.scalar("SELECT COUNT(*) FROM users"), 2)
+        self.assertIsNone(conn.one("SELECT * FROM users WHERE id = ?", (99,)))
+        conn.close()
+
+    def test_context_manager_closes_connection(self) -> None:
+        with connect("sqlite", database=self.database_path) as conn:
+            conn.execute("CREATE TABLE users (id INTEGER)")
+
+        with self.assertRaises(PyQueryXError):
+            conn.query("SELECT * FROM users")
+
+    def test_transaction_rolls_back_on_error(self) -> None:
+        conn = self.connect_sqlite()
+        conn.execute("CREATE TABLE users (id INTEGER PRIMARY KEY)")
+
+        with self.assertRaises(PyQueryXError):
+            with conn.transaction():
+                conn.execute("INSERT INTO users VALUES (?)", (1,))
+                conn.execute("INSERT INTO users VALUES (?)", (1,))
+
+        self.assertEqual(conn.query("SELECT * FROM users"), [])
+        conn.close()
+
+    def test_connect_from_config(self) -> None:
+        config = DatabaseConfig(db_type="sqlite", database=self.database_path)
+
+        conn = connect_from_config(config)
+
+        self.assertEqual(conn.db_type, "sqlite")
+        conn.close()
+
+    def test_connect_from_env(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "PYQUERYX_DB_TYPE": "sqlite",
+                "PYQUERYX_DATABASE": self.database_path,
+            },
+            clear=False,
+        ):
+            conn = connect_from_env()
+
+        self.assertEqual(conn.db_type, "sqlite")
+        conn.close()
+
+    def test_sqlite_url_connection(self) -> None:
+        conn = connect(url=f"sqlite:///{self.database_path}")
+
+        conn.execute("CREATE TABLE users (id INTEGER)")
+
+        self.assertEqual(conn.db_type, "sqlite")
+        conn.close()
+
     def test_repr_includes_database_type(self) -> None:
         conn = self.connect_sqlite()
 
-        self.assertEqual(repr(conn), "<EZSQL Connection (sqlite)>")
+        self.assertEqual(repr(conn), "<PyQueryX Connection (sqlite)>")
         conn.close()
 
-    def test_unsupported_database_type_raises_ezsql_error(self) -> None:
-        with self.assertRaisesRegex(EZSQLError, "unsupported database type"):
+    def test_unsupported_database_type_raises_pyqueryx_error(self) -> None:
+        with self.assertRaisesRegex(PyQueryXError, "unsupported database type"):
             connect("db2")
 
     def test_mysql_missing_driver_raises_clean_error(self) -> None:
         with patch("builtins.__import__", side_effect=self.fail_import("mysql")):
-            with self.assertRaisesRegex(EZSQLError, "mysql-connector-python"):
+            with self.assertRaisesRegex(PyQueryXError, "mysql-connector-python"):
                 connect("mysql")
 
     def test_postgres_missing_driver_raises_clean_error(self) -> None:
@@ -83,20 +143,20 @@ class EZSQLTests(unittest.TestCase):
             "builtins.__import__",
             side_effect=self.fail_imports({"pg8000", "psycopg", "psycopg2"}),
         ):
-            with self.assertRaisesRegex(EZSQLError, "psycopg2, psycopg, or pg8000"):
+            with self.assertRaisesRegex(PyQueryXError, "psycopg2, psycopg, or pg8000"):
                 connect("postgres")
 
     def test_myssql_alias_uses_mysql_driver(self) -> None:
         with patch("builtins.__import__", side_effect=self.fail_import("mysql")):
-            with self.assertRaisesRegex(EZSQLError, "mysql-connector-python"):
+            with self.assertRaisesRegex(PyQueryXError, "mysql-connector-python"):
                 connect("myssql")
 
     def test_oracle_missing_driver_raises_clean_error(self) -> None:
         with patch("builtins.__import__", side_effect=self.fail_import("oracledb")):
-            with self.assertRaisesRegex(EZSQLError, "oracledb"):
+            with self.assertRaisesRegex(PyQueryXError, "oracledb"):
                 connect("oracle")
 
-    def test_postgres_connection_arguments(self) -> None:
+    def test_postgres_psycopg2_connection_arguments(self) -> None:
         captured = {}
         raw_connection = object()
 
@@ -116,6 +176,7 @@ class EZSQLTests(unittest.TestCase):
                 user="postgres",
                 password="secret",
                 port=5432,
+                timeout=10,
             )
 
         self.assertIs(conn.conn, raw_connection)
@@ -128,6 +189,7 @@ class EZSQLTests(unittest.TestCase):
                 "user": "postgres",
                 "password": "secret",
                 "port": 5432,
+                "connect_timeout": 10,
             },
         )
 
@@ -200,6 +262,7 @@ class EZSQLTests(unittest.TestCase):
                 user="root",
                 password="secret",
                 port=3306,
+                timeout=10,
             )
 
         self.assertIs(conn.conn, raw_connection)
@@ -212,13 +275,14 @@ class EZSQLTests(unittest.TestCase):
                 "user": "root",
                 "password": "secret",
                 "port": 3306,
+                "connection_timeout": 10,
             },
         )
 
     def test_database_errors_are_wrapped(self) -> None:
         conn = self.connect_sqlite()
 
-        with self.assertRaisesRegex(EZSQLError, "EZSQL Error:"):
+        with self.assertRaisesRegex(PyQueryXError, "PyQueryX Error:"):
             conn.query("SELECT * FROM missing_table")
 
         conn.close()
@@ -228,9 +292,9 @@ class EZSQLTests(unittest.TestCase):
             def close(self) -> None:
                 raise sqlite3.Error("close failed")
 
-        conn = EZConnection(BadConnection(), "sqlite")
+        conn = PyQueryXConnection(BadConnection(), "sqlite")
 
-        with self.assertRaisesRegex(EZSQLError, "close failed"):
+        with self.assertRaisesRegex(PyQueryXError, "close failed"):
             conn.close()
 
     def test_is_select_query(self) -> None:
@@ -238,11 +302,15 @@ class EZSQLTests(unittest.TestCase):
         self.assertTrue(is_select_query("   select * from users"))
         self.assertFalse(is_select_query("INSERT INTO users VALUES (1)"))
 
-    def test_branded_import_module(self) -> None:
-        branded_module = importlib.import_module("EzSQL")
+    def test_import_modules(self) -> None:
+        pyqueryx_module = importlib.import_module("PyQueryX")
+        ezsql_module = importlib.import_module("ezsql")
+        ezsql_legacy_module = importlib.import_module("EzSQL")
 
-        self.assertIs(branded_module.connect, connect)
-        self.assertEqual(branded_module.__version__, "0.3.3")
+        self.assertIs(pyqueryx_module.connect, connect)
+        self.assertIs(ezsql_module.connect, connect)
+        self.assertIs(ezsql_legacy_module.connect, connect)
+        self.assertEqual(pyqueryx_module.__version__, "0.4.0")
 
     def fail_import(self, blocked_name: str):
         return self.fail_imports({blocked_name})

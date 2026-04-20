@@ -3,9 +3,9 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "EzSQL.py"
-version = "0.3.3"
-description = "A small, beginner-friendly SQL wrapper for Python DB-API drivers."
+name = "PyQueryX"
+version = "0.4.0"
+description = "A friendly Python SQL toolkit with simple querying, config helpers, and DB-API connectivity."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [
     { name = "srinjan93306-ai" }
 ]
-keywords = ["sql", "sqlite", "postgres", "mysql", "oracle", "database", "db-api"]
+keywords = ["sql", "sqlite", "postgres", "mysql", "oracle", "database", "db-api", "query"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -40,16 +40,17 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/srinjan93306-ai/EzSQL.py"
-Repository = "https://github.com/srinjan93306-ai/EzSQL.py"
-Issues = "https://github.com/srinjan93306-ai/EzSQL.py/issues"
+Homepage = "https://github.com/srinjan93306-ai/PyQueryX"
+Repository = "https://github.com/srinjan93306-ai/PyQueryX"
+Issues = "https://github.com/srinjan93306-ai/PyQueryX/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["ezsql*"]
+include = ["pyqueryx*", "ezsql*"]
 
 [tool.setuptools]
-py-modules = ["EzSQL"]
+py-modules = ["PyQueryX", "EzSQL"]
 
 [tool.setuptools.package-data]
+pyqueryx = ["py.typed"]
 ezsql = ["py.typed"]

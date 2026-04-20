@@ -1,6 +1,5 @@
-"""Helper functions used by ezsql."""
+"""Backward-compatible helper imports for PyQueryX."""
 
+from pyqueryx.helpers import is_select_query
 
-def is_select_query(sql: str) -> bool:
-    """Return True when SQL starts with SELECT after leading whitespace."""
-    return sql.lstrip().lower().startswith("select")
+__all__ = ["is_select_query"]

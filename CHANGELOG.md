@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 - 2026-04-20
+
+- Renamed project and distribution to `PyQueryX`.
+- Added new `pyqueryx` package and `PyQueryX.py` compatibility module.
+- Kept `ezsql` and `EzSQL` compatibility imports for existing users.
+- Added parameterized query support across `query()`, `execute()`, and
+  `executemany()`.
+- Added `one()`, `scalar()`, context manager support, and transaction helper.
+- Added `DatabaseConfig`, `connect_from_config()`, `connect_from_env()`, and
+  connection URL support.
+- Added `timeout`, `autocommit`, `echo`, and driver-specific connection
+  options.
+
 ## 0.3.3 - 2026-04-20
 
 - Added PyPI Trusted Publishing workflow.

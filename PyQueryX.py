@@ -1,7 +1,4 @@
-"""Backward-compatible module for the former EzSQL.py name.
-
-Use ``from pyqueryx import connect`` in new code.
-"""
+"""Compatibility module for users who prefer ``import PyQueryX``."""
 
 from pyqueryx import (
     DatabaseConfig,

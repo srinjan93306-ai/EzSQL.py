@@ -1,7 +1,5 @@
-"""Custom exceptions for ezsql."""
+"""Backward-compatible exception imports for PyQueryX."""
 
+from pyqueryx.exceptions import EZSQLError, PyQueryXError
 
-class EZSQLError(Exception):
-    """Base exception raised by ezsql."""
-
-    pass
+__all__ = ["EZSQLError", "PyQueryXError"]

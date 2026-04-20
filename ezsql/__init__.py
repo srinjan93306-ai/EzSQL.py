@@ -1,188 +1,28 @@
-"""A small, beginner-friendly SQL wrapper for Python DB-API drivers."""
+"""Backward-compatible import shim for PyQueryX.
 
-from __future__ import annotations
+Use ``from pyqueryx import connect`` in new code.
+"""
 
-import sqlite3
-from typing import Any, Dict, Optional
+from pyqueryx import (
+    DatabaseConfig,
+    EZConnection,
+    EZSQLError,
+    PyQueryXConnection,
+    PyQueryXError,
+    __version__,
+    connect,
+    connect_from_config,
+    connect_from_env,
+)
 
-from .connection import EZConnection
-from .exceptions import EZSQLError
-
-__version__ = "0.3.3"
-
-__all__ = ["connect", "EZConnection", "EZSQLError", "__version__"]
-
-
-def connect(
-    db_type: str = "sqlite",
-    database: Optional[str] = None,
-    host: Optional[str] = None,
-    user: Optional[str] = None,
-    password: Optional[str] = None,
-    port: Optional[int] = None,
-) -> EZConnection:
-    """Create and return an :class:`EZConnection`.
-
-    Args:
-        db_type: Database backend to use. Supported values are ``"sqlite"``,
-            ``"postgres"``, ``"mysql"``, ``"myssql"``, and ``"oracle"``.
-        database: SQLite file path, database name, Oracle service name or DSN,
-            or ``None`` for an in-memory SQLite database.
-        host: Database server host for client/server databases.
-        user: Database username.
-        password: Database password.
-        port: Database server port.
-
-    Raises:
-        EZSQLError: If the database type is unsupported, a driver is missing,
-            or the database connection fails.
-    """
-    normalized_db_type = db_type.lower().strip()
-
-    if normalized_db_type == "sqlite":
-        try:
-            connection = sqlite3.connect(database or ":memory:")
-        except sqlite3.Error as exc:
-            raise EZSQLError(f"EZSQL Error: {exc}") from exc
-
-        print("Connected to SQLite")
-        return EZConnection(connection, normalized_db_type)
-
-    if normalized_db_type in {"postgres", "postgresql"}:
-        postgres_driver = None
-        postgres_driver_name = None
-        postgres_import_error = None
-
-        try:
-            import psycopg2
-
-            postgres_driver = psycopg2
-            postgres_driver_name = "psycopg"
-        except ImportError as exc:
-            postgres_import_error = exc
-
-        if postgres_driver is None:
-            try:
-                import psycopg
-
-                postgres_driver = psycopg
-                postgres_driver_name = "psycopg"
-            except ImportError as exc:
-                postgres_import_error = exc
-
-        if postgres_driver is None:
-            try:
-                from pg8000 import dbapi as pg8000
-
-                postgres_driver = pg8000
-                postgres_driver_name = "pg8000"
-            except ImportError as exc:
-                postgres_import_error = exc
-
-        if postgres_driver is None:
-            raise EZSQLError(
-                "EZSQL Error: PostgreSQL support requires psycopg2, psycopg, "
-                "or pg8000 to be installed."
-            ) from postgres_import_error
-
-        database_key = "database" if postgres_driver_name == "pg8000" else "dbname"
-        connection_args = _clean_connection_args(
-            {
-                database_key: database,
-                "host": host,
-                "user": user,
-                "password": password,
-                "port": port,
-            }
-        )
-
-        try:
-            connection = postgres_driver.connect(**connection_args)
-        except postgres_driver.Error as exc:
-            raise EZSQLError(f"EZSQL Error: {exc}") from exc
-
-        return EZConnection(connection, "postgres")
-
-    if normalized_db_type in {"mysql", "myssql"}:
-        try:
-            import mysql.connector
-        except ImportError as exc:
-            raise EZSQLError(
-                "EZSQL Error: MySQL support requires mysql-connector-python "
-                "to be installed."
-            ) from exc
-
-        connection_args = _clean_connection_args(
-            {
-                "database": database,
-                "host": host,
-                "user": user,
-                "password": password,
-                "port": port,
-            }
-        )
-
-        try:
-            connection = mysql.connector.connect(**connection_args)
-        except mysql.connector.Error as exc:
-            raise EZSQLError(f"EZSQL Error: {exc}") from exc
-
-        return EZConnection(connection, "mysql")
-
-    if normalized_db_type == "oracle":
-        try:
-            import oracledb
-        except ImportError as exc:
-            raise EZSQLError(
-                "EZSQL Error: Oracle support requires oracledb to be installed."
-            ) from exc
-
-        connection_args = _build_oracle_connection_args(
-            oracledb=oracledb,
-            database=database,
-            host=host,
-            user=user,
-            password=password,
-            port=port,
-        )
-
-        try:
-            connection = oracledb.connect(**connection_args)
-        except oracledb.Error as exc:
-            raise EZSQLError(f"EZSQL Error: {exc}") from exc
-
-        return EZConnection(connection, "oracle")
-
-    raise EZSQLError(f"EZSQL Error: unsupported database type '{db_type}'.")
-
-
-def _clean_connection_args(args: Dict[str, Any]) -> Dict[str, Any]:
-    """Return connection arguments after removing unset values."""
-    return {key: value for key, value in args.items() if value is not None}
-
-
-def _build_oracle_connection_args(
-    *,
-    oracledb: Any,
-    database: Optional[str],
-    host: Optional[str],
-    user: Optional[str],
-    password: Optional[str],
-    port: Optional[int],
-) -> Dict[str, Any]:
-    """Build Python-oracledb connection arguments.
-
-    If ``host`` and ``database`` are provided, ``database`` is treated as the
-    Oracle service name. If no host is provided, ``database`` is passed as the
-    DSN so callers can use an existing Oracle DSN or Easy Connect string.
-    """
-    args = _clean_connection_args({"user": user, "password": password})
-
-    if host and database:
-        args["dsn"] = oracledb.makedsn(host, port or 1521, service_name=database)
-    elif database:
-        args["dsn"] = database
-    elif host:
-        args["dsn"] = host
-
-    return args
+__all__ = [
+    "connect",
+    "connect_from_config",
+    "connect_from_env",
+    "DatabaseConfig",
+    "PyQueryXConnection",
+    "PyQueryXError",
+    "EZConnection",
+    "EZSQLError",
+    "__version__",
+]
