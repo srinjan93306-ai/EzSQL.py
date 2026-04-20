@@ -1,0 +1,12 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## 0.1.0 - 2026-04-20
+
+- Added `connect()` for SQLite and PostgreSQL.
+- Added `EZConnection.query()`, `EZConnection.execute()`, and `EZConnection.close()`.
+- Added automatic cursor handling and automatic commits for write queries.
+- Added `EZSQLError` for clean database error wrapping.
+- Added `is_select_query()` helper.
+- Added project packaging metadata, README, example script, and tests.

@@ -1,0 +1,38 @@
+# Contributing
+
+Thanks for improving `ezsql`.
+
+## Development Setup
+
+Create and activate a virtual environment, then install the project locally:
+
+```bash
+python -m venv .venv
+python -m pip install -e .
+```
+
+SQLite support requires no extra dependencies. PostgreSQL support needs:
+
+```bash
+python -m pip install -e ".[postgres]"
+```
+
+## Run Tests
+
+```bash
+python -m unittest discover
+```
+
+## Run Syntax Checks
+
+```bash
+python -m compileall ezsql tests examples
+```
+
+## Project Principles
+
+- Keep the public API small.
+- Do not expose cursors to users.
+- Prefer beginner-friendly names and behavior.
+- Wrap database driver errors in `EZSQLError`.
+- Avoid adding dependencies unless they clearly improve the library.

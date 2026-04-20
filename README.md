@@ -1,0 +1,98 @@
+# ezsql
+
+`ezsql` is a small Python library that wraps Python DB-API connections with a
+simple interface. It hides cursors and routine transaction handling so beginners
+can run SQL with two methods: `query()` and `execute()`.
+
+## Installation
+
+For local development:
+
+```bash
+pip install -e .
+```
+
+SQLite works with Python's standard library. PostgreSQL support requires
+`psycopg2`:
+
+```bash
+pip install "ezsql[postgres]"
+```
+
+## Quick Start
+
+```python
+from ezsql import connect
+
+conn = connect("sqlite", database="test.db")
+
+conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER, name TEXT)")
+conn.execute("INSERT INTO users VALUES (1, 'Srinjan')")
+
+result = conn.query("SELECT * FROM users")
+
+print(result)
+
+conn.close()
+```
+
+Output:
+
+```python
+[(1, 'Srinjan')]
+```
+
+## API
+
+### `connect(db_type="sqlite", database=None, host=None, user=None, password=None, port=None)`
+
+Creates an `EZConnection`.
+
+Supported database types:
+
+- `"sqlite"`
+- `"postgres"` or `"postgresql"`
+
+SQLite creates the database file automatically when it does not already exist.
+If `database` is omitted for SQLite, ezsql uses an in-memory database.
+
+### `EZConnection.query(sql)`
+
+Executes SQL and returns all rows as a list of tuples. Statements with no result
+return an empty list. Write statements are committed automatically.
+
+### `EZConnection.execute(sql)`
+
+Executes SQL and returns `None`. Use it for `CREATE TABLE`, `INSERT`, `UPDATE`,
+and `DELETE`.
+
+### `EZConnection.close()`
+
+Closes the database connection.
+
+## Errors
+
+Database errors are wrapped in `EZSQLError`:
+
+```python
+from ezsql import EZSQLError
+
+try:
+    conn.query("SELECT * FROM missing_table")
+except EZSQLError as error:
+    print(error)
+```
+
+## Development
+
+Run the test suite:
+
+```bash
+python -m unittest discover
+```
+
+Run a syntax check:
+
+```bash
+python -m compileall ezsql tests examples
+```
