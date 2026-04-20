@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
 authors = [
-    { name = "EZSQL contributors" }
+    { name = "srinjan93306-ai" }
 ]
 keywords = ["sql", "sqlite", "postgres", "mysql", "oracle", "database", "db-api"]
 classifiers = [
@@ -40,8 +40,8 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ezsql/ezsql"
-Issues = "https://github.com/ezsql/ezsql/issues"
+Homepage = "https://github.com/srinjan93306-ai/ezsql"
+Issues = "https://github.com/srinjan93306-ai/ezsql/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
