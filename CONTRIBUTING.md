@@ -11,10 +11,14 @@ python -m venv .venv
 python -m pip install -e .
 ```
 
-SQLite support requires no extra dependencies. PostgreSQL support needs:
+SQLite support requires no extra dependencies. Other database drivers are
+optional:
 
 ```bash
 python -m pip install -e ".[postgres]"
+python -m pip install -e ".[mysql]"
+python -m pip install -e ".[oracle]"
+python -m pip install -e ".[all]"
 ```
 
 ## Run Tests

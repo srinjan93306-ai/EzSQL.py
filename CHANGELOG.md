@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - 2026-04-20
+
+- Added MySQL support through `mysql-connector-python`.
+- Added Oracle support through `oracledb`.
+- Added optional package extras: `postgres`, `mysql`, `oracle`, and `all`.
+- Updated README connection examples for PostgreSQL, MySQL, and Oracle.
+
 ## 0.1.0 - 2026-04-20
 
 - Added `connect()` for SQLite and PostgreSQL.

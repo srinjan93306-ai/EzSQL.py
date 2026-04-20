@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezsql"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small, beginner-friendly SQL wrapper for Python DB-API drivers."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 authors = [
     { name = "EZSQL contributors" }
 ]
-keywords = ["sql", "sqlite", "postgres", "database", "db-api"]
+keywords = ["sql", "sqlite", "postgres", "mysql", "oracle", "database", "db-api"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -31,6 +31,13 @@ dependencies = []
 
 [project.optional-dependencies]
 postgres = ["psycopg2>=2.9"]
+mysql = ["mysql-connector-python>=8.0"]
+oracle = ["oracledb>=2.0"]
+all = [
+    "psycopg2>=2.9",
+    "mysql-connector-python>=8.0",
+    "oracledb>=2.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/ezsql/ezsql"

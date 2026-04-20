@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
+from unittest.mock import patch
 
 from ezsql import EZConnection, EZSQLError, connect
 from ezsql.helpers import is_select_query
@@ -67,7 +68,22 @@ class EZSQLTests(unittest.TestCase):
 
     def test_unsupported_database_type_raises_ezsql_error(self) -> None:
         with self.assertRaisesRegex(EZSQLError, "unsupported database type"):
-            connect("mysql")
+            connect("db2")
+
+    def test_mysql_missing_driver_raises_clean_error(self) -> None:
+        with patch("builtins.__import__", side_effect=self.fail_import("mysql")):
+            with self.assertRaisesRegex(EZSQLError, "mysql-connector-python"):
+                connect("mysql")
+
+    def test_myssql_alias_uses_mysql_driver(self) -> None:
+        with patch("builtins.__import__", side_effect=self.fail_import("mysql")):
+            with self.assertRaisesRegex(EZSQLError, "mysql-connector-python"):
+                connect("myssql")
+
+    def test_oracle_missing_driver_raises_clean_error(self) -> None:
+        with patch("builtins.__import__", side_effect=self.fail_import("oracledb")):
+            with self.assertRaisesRegex(EZSQLError, "oracledb"):
+                connect("oracle")
 
     def test_database_errors_are_wrapped(self) -> None:
         conn = self.connect_sqlite()
@@ -91,6 +107,17 @@ class EZSQLTests(unittest.TestCase):
         self.assertTrue(is_select_query("SELECT * FROM users"))
         self.assertTrue(is_select_query("   select * from users"))
         self.assertFalse(is_select_query("INSERT INTO users VALUES (1)"))
+
+    def fail_import(self, blocked_name: str):
+        original_import = __import__
+
+        def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if name == blocked_name or name.startswith(f"{blocked_name}."):
+                raise ImportError(f"No module named {blocked_name}")
+
+            return original_import(name, globals, locals, fromlist, level)
+
+        return fake_import
 
 
 if __name__ == "__main__":

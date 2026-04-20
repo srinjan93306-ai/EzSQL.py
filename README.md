@@ -12,11 +12,14 @@ For local development:
 pip install -e .
 ```
 
-SQLite works with Python's standard library. PostgreSQL support requires
-`psycopg2`:
+SQLite works with Python's standard library. Other databases use optional
+drivers:
 
 ```bash
 pip install "ezsql[postgres]"
+pip install "ezsql[mysql]"
+pip install "ezsql[oracle]"
+pip install "ezsql[all]"
 ```
 
 ## Quick Start
@@ -52,9 +55,47 @@ Supported database types:
 
 - `"sqlite"`
 - `"postgres"` or `"postgresql"`
+- `"mysql"` or `"myssql"`
+- `"oracle"`
 
 SQLite creates the database file automatically when it does not already exist.
 If `database` is omitted for SQLite, ezsql uses an in-memory database.
+
+For PostgreSQL and MySQL, `database` is the database name.
+
+For Oracle, `database` can be either the service name used with `host` and
+`port`, or a full DSN/Easy Connect string when `host` is omitted.
+
+## More Connection Examples
+
+```python
+postgres = connect(
+    "postgres",
+    database="app",
+    host="localhost",
+    user="postgres",
+    password="secret",
+    port=5432,
+)
+
+mysql = connect(
+    "mysql",
+    database="app",
+    host="localhost",
+    user="root",
+    password="secret",
+    port=3306,
+)
+
+oracle = connect(
+    "oracle",
+    database="ORCLPDB1",
+    host="localhost",
+    user="hr",
+    password="secret",
+    port=1521,
+)
+```
 
 ### `EZConnection.query(sql)`
 
